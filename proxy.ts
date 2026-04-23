@@ -4,7 +4,7 @@ const PROTECTED_PATHS = ["/admin", "/api/generate", "/api/publish"];
 const LOGIN_PATH = "/admin/login";
 const SESSION_COOKIE = "__session";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtected = PROTECTED_PATHS.some(
