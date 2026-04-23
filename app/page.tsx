@@ -60,7 +60,7 @@ export default async function Home() {
             href="#"
             className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-medium text-white bg-accent hover:bg-accent-hover transition-colors rounded-full px-4 py-1.5"
           >
-            Subscribe
+            Subscribe 
           </a>
 
           <MobileNav />
