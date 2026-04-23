@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminApp } from "@/lib/firebase-admin";
+import { getAdminApp } from "@/lib/firebase-admin";
 import { getAuth } from "firebase-admin/auth";
 
 const SESSION_COOKIE = "__session";
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
   try {
     // Verify the Firebase ID token with Admin SDK
-    const decoded = await getAuth(adminApp).verifyIdToken(idToken);
+    const decoded = await getAuth(getAdminApp()).verifyIdToken(idToken);
 
     // Optional: restrict to a specific email (your own Google account)
     const allowedEmail = process.env.ADMIN_EMAIL;

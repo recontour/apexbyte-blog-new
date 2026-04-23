@@ -1,4 +1,4 @@
-import { adminDb } from "./firebase-admin";
+import { getAdminDb } from "./firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 
 // ── Content block types ──────────────────────────────────────────────────────
@@ -117,7 +117,7 @@ function docToPost(slug: string, data: FirebaseFirestore.DocumentData): Post {
 
 /** Fetch a single published post by slug. Returns null if not found or draft. */
 export async function getPost(slug: string): Promise<Post | null> {
-  const doc = await adminDb.collection("posts").doc(slug).get();
+  const doc = await getAdminDb().collection("posts").doc(slug).get();
   if (!doc.exists) return null;
   const data = doc.data()!;
   if (data.status !== "published") return null;
@@ -126,7 +126,7 @@ export async function getPost(slug: string): Promise<Post | null> {
 
 /** Fetch all published posts ordered by publishedAt desc, for the homepage. */
 export async function getPublishedPosts(limit = 20): Promise<PostSummary[]> {
-  const snap = await adminDb
+  const snap = await getAdminDb()
     .collection("posts")
     .where("status", "==", "published")
     .orderBy("publishedAt", "desc")
@@ -141,7 +141,7 @@ export async function getPublishedPosts(limit = 20): Promise<PostSummary[]> {
 
 /** Fetch the single featured post for the homepage hero. */
 export async function getFeaturedPost(): Promise<PostSummary | null> {
-  const snap = await adminDb
+  const snap = await getAdminDb()
     .collection("posts")
     .where("status", "==", "published")
     .where("featured", "==", true)
@@ -157,7 +157,7 @@ export async function getFeaturedPost(): Promise<PostSummary | null> {
 
 /** Fetch all published slugs — used by generateStaticParams for ISR. */
 export async function getAllPublishedSlugs(): Promise<string[]> {
-  const snap = await adminDb
+  const snap = await getAdminDb()
     .collection("posts")
     .where("status", "==", "published")
     .select()   // fetch no fields, just doc IDs — cheapest possible read
@@ -168,7 +168,7 @@ export async function getAllPublishedSlugs(): Promise<string[]> {
 
 /** Fetch all posts (any status) for the admin dashboard. */
 export async function getAllPostsForAdmin(): Promise<PostSummary[]> {
-  const snap = await adminDb
+  const snap = await getAdminDb()
     .collection("posts")
     .orderBy("updatedAt", "desc")
     .get();
@@ -186,9 +186,9 @@ export async function savePost(
     publishedAt?: string;
   }
 ): Promise<void> {
-  const isNew = !(await adminDb.collection("posts").doc(slug).get()).exists;
+  const isNew = !(await getAdminDb().collection("posts").doc(slug).get()).exists;
 
-  await adminDb
+  await getAdminDb()
     .collection("posts")
     .doc(slug)
     .set({
@@ -204,5 +204,6 @@ export async function savePost(
 
 /** Delete a post. Used by the admin dashboard. */
 export async function deletePost(slug: string): Promise<void> {
-  await adminDb.collection("posts").doc(slug).delete();
+  await getAdminDb().collection("posts").doc(slug).delete();
 }
+

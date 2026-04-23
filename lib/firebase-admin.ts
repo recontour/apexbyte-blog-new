@@ -2,7 +2,7 @@ import { cert, getApps, initializeApp, App } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
-function getAdminApp(): App {
+function createAdminApp(): App {
   if (getApps().length > 0) {
     return getApps()[0];
   }
@@ -25,6 +25,14 @@ function getAdminApp(): App {
   });
 }
 
-export const adminApp = getAdminApp();
-export const adminDb = getFirestore(adminApp);
-export const adminStorage = getStorage(adminApp);
+export function getAdminApp(): App {
+  return createAdminApp();
+}
+
+export function getAdminDb() {
+  return getFirestore(createAdminApp());
+}
+
+export function getAdminStorage() {
+  return getStorage(createAdminApp());
+}

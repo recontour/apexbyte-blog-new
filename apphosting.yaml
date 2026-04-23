@@ -24,22 +24,12 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
     value: G-NWJWXR0JW2
 
-  # ── Secrets (stored in Google Secret Manager — never hardcoded here) ─────────
-  # To add FIREBASE_SERVICE_ACCOUNT_KEY as a secret:
-  #   1. Go to Google Cloud Console → Secret Manager
-  #   2. Create a secret named "firebase-service-account-key"
-  #   3. Paste the full service account JSON as the secret value
-  #   4. Uncomment the block below:
-  #
-  # - variable: FIREBASE_SERVICE_ACCOUNT_KEY
-  #   secret: firebase-service-account-key
+  # ── Secrets (stored in Google Secret Manager) ────────────────────────────────
+  - variable: FIREBASE_SERVICE_ACCOUNT_KEY
+    secret: FIREBASE_SERVICE_ACCOUNT_KEY
 
-  # To add GEMINI_API_KEY as a secret:
-  #   1. Create a secret named "gemini-api-key" in Secret Manager
-  #   2. Uncomment the block below:
-  #
-  # - variable: GEMINI_API_KEY
-  #   secret: gemini-api-key
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
 
   - variable: ADMIN_EMAIL
     value: ashwin.torphe@gmail.com
