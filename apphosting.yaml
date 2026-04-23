@@ -1,0 +1,45 @@
+runConfig:
+  runtime: nodejs22
+
+env:
+  # ── Public Firebase client config (safe to expose) ──────────────────────────
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyBm_wPKATxwzMy8xbgXRus3urNjUil7krc
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: apexbyte-blog.firebaseapp.com
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: apexbyte-blog
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: apexbyte-blog.firebasestorage.app
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "525554176162"
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:525554176162:web:7544966bcb2876782587fb
+
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-NWJWXR0JW2
+
+  # ── Secrets (stored in Google Secret Manager — never hardcoded here) ─────────
+  # To add FIREBASE_SERVICE_ACCOUNT_KEY as a secret:
+  #   1. Go to Google Cloud Console → Secret Manager
+  #   2. Create a secret named "firebase-service-account-key"
+  #   3. Paste the full service account JSON as the secret value
+  #   4. Uncomment the block below:
+  #
+  # - variable: FIREBASE_SERVICE_ACCOUNT_KEY
+  #   secret: firebase-service-account-key
+
+  # To add GEMINI_API_KEY as a secret:
+  #   1. Create a secret named "gemini-api-key" in Secret Manager
+  #   2. Uncomment the block below:
+  #
+  # - variable: GEMINI_API_KEY
+  #   secret: gemini-api-key
+
+  - variable: ADMIN_EMAIL
+    value: ashwin.torphe@gmail.com
