@@ -27,10 +27,18 @@ function formatDate(iso: string) {
 }
 
 export default async function Home() {
-  const [featured, posts] = await Promise.all([
-    getFeaturedPost(),
-    getPublishedPosts(12),
-  ]);
+  // Firebase credentials are only available at runtime on Firebase App Hosting.
+  // Fall back to empty data at build time; ISR will populate on first request.
+  let featured: Awaited<ReturnType<typeof getFeaturedPost>> = null;
+  let posts: Awaited<ReturnType<typeof getPublishedPosts>> = [];
+  try {
+    [featured, posts] = await Promise.all([
+      getFeaturedPost(),
+      getPublishedPosts(12),
+    ]);
+  } catch {
+    // credentials unavailable at build time — ISR will handle real data
+  }
 
   // Filter out the featured post from the list to avoid duplication
   const listPosts = featured

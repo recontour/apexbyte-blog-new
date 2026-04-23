@@ -6,7 +6,14 @@ const SITE_URL = "https://apexbyte.blog";
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const posts = await getPublishedPosts(500);
+  // Firebase credentials are only available at runtime on Firebase App Hosting.
+  // Return a minimal sitemap at build time; ISR revalidates every hour.
+  let posts: Awaited<ReturnType<typeof getPublishedPosts>> = [];
+  try {
+    posts = await getPublishedPosts(500);
+  } catch {
+    // credentials unavailable at build time
+  }
 
   const postEntries: MetadataRoute.Sitemap = posts.map((post) => ({
     url: `${SITE_URL}/blog/${post.slug}`,

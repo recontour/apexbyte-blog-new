@@ -13,8 +13,15 @@ const SITE_NAME = "ApexByte";
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const slugs = await getAllPublishedSlugs();
-  return slugs.map((slug) => ({ slug }));
+  try {
+    const slugs = await getAllPublishedSlugs();
+    return slugs.map((slug) => ({ slug }));
+  } catch {
+    // Firebase credentials are not available at build time (e.g. Firebase App
+    // Hosting injects secrets only at runtime). Return an empty array so the
+    // build succeeds; ISR will generate and cache each page on first request.
+    return [];
+  }
 }
 
 // ── SEO metadata ─────────────────────────────────────────────────────────────
