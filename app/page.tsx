@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getFeaturedPost, getPublishedPosts } from "@/lib/posts";
 import MobileNav from "@/components/blog/MobileNav";
+import NewsletterForm from "@/components/blog/NewsletterForm";
 
 export const dynamic = "force-dynamic";
 
@@ -82,10 +83,10 @@ export default async function Home() {
           </nav>
 
           <a
-            href="#"
+            href="#newsletter"
             className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-medium text-white bg-accent hover:bg-accent-hover transition-colors rounded-full px-4 py-1.5"
           >
-            Subscribe 
+            Subscribe
           </a>
 
           <MobileNav />
@@ -263,7 +264,7 @@ export default async function Home() {
         )}
 
         {/* Newsletter CTA */}
-        <section className="mt-16 rounded-2xl bg-white border border-border p-8 sm:p-12 text-center shadow-sm">
+        <section id="newsletter" className="mt-16 rounded-2xl bg-white border border-border p-8 sm:p-12 text-center shadow-sm">
           <p className="text-[11px] font-semibold tracking-widest uppercase text-accent mb-3">
             Newsletter
           </p>
@@ -276,19 +277,7 @@ export default async function Home() {
           <p className="text-[14px] text-muted mb-8 max-w-xs mx-auto leading-relaxed">
             No noise. Just the best deep dives delivered to your inbox.
           </p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-sm mx-auto">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 rounded-full border border-border bg-surface px-4 py-2.5 text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition"
-            />
-            <button
-              type="submit"
-              className="rounded-full bg-accent hover:bg-accent-hover transition-colors text-white text-[14px] font-medium px-6 py-2.5 whitespace-nowrap"
-            >
-              Subscribe
-            </button>
-          </form>
+          <NewsletterForm />
         </section>
       </main>
 

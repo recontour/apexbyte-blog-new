@@ -61,7 +61,7 @@ export default function MobileNav() {
               </a>
             ))}
             <a
-              href="#"
+              href="#newsletter"
               onClick={() => setOpen(false)}
               className="mt-1 inline-flex items-center justify-center text-[14px] font-medium text-white bg-accent hover:bg-accent-hover transition-colors rounded-full px-4 py-2"
             >
