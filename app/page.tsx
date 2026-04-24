@@ -294,7 +294,7 @@ export default async function Home() {
 
       {/* Footer */}
       <footer className="border-t border-border bg-white mt-8">
-        <div className="mx-auto max-w-5xl px-5 sm:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mx-auto max-w-5xl px-5 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-[15px] font-semibold tracking-tight text-ink">
             Apex<span className="text-accent">Byte</span>
           </span>
