@@ -206,9 +206,8 @@ export async function generatePost(prompt: string): Promise<GeneratedPost> {
     config: {
       systemInstruction: ARTICLE_SYSTEM_PROMPT,
       responseMimeType: "application/json",
-      responseSchema: ARTICLE_SCHEMA,
       temperature: 0.7,
-      maxOutputTokens: 16384,
+      maxOutputTokens: 8192,
     },
   });
   const call1Finish = articleRes.candidates?.[0]?.finishReason;

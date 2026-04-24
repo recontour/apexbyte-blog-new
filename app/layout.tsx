@@ -14,9 +14,42 @@ const playfair = Playfair_Display({
   weight: ["400", "600", "700"],
 });
 
+const siteUrl = "https://apexbyte-blog.web.app";
+
 export const metadata: Metadata = {
-  title: "ApexByte — Modern Tech Blog",
-  description: "Deep dives into software, AI, and the future of technology.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "ApexByte — Modern Tech Blog",
+    template: "%s | ApexByte",
+  },
+  description:
+    "ApexByte is a modern tech blog covering deep dives into software engineering, artificial intelligence, web development, and the future of technology. Written for developers and curious minds.",
+  keywords: ["tech blog", "software engineering", "AI", "web development", "programming", "technology"],
+  authors: [{ name: "ApexByte" }],
+  creator: "ApexByte",
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName: "ApexByte",
+    title: "ApexByte — Modern Tech Blog",
+    description:
+      "Deep dives into software engineering, AI, web development, and the future of technology.",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ApexByte — Modern Tech Blog",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ApexByte — Modern Tech Blog",
+    description:
+      "Deep dives into software engineering, AI, web development, and the future of technology.",
+    images: ["/opengraph-image.png"],
+  },
 };
 
 export default function RootLayout({

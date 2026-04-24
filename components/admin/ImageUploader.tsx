@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import app from "@/lib/firebase";
 import { resizeToWebP, IMAGE_PRESETS } from "@/lib/image-utils";
 
 type Props = {
@@ -32,10 +30,16 @@ export default function ImageUploader({ slug, onUploaded, currentUrl }: Props) {
 
     try {
       const webpBlob = await resizeToWebP(file, IMAGE_PRESETS.cover);
-      const storage = getStorage(app);
-      const storageRef = ref(storage, `posts/${slug}/cover.webp`);
-      await uploadBytes(storageRef, webpBlob, { contentType: "image/webp" });
-      const url = await getDownloadURL(storageRef);
+      const formData = new FormData();
+      formData.append("slug", slug);
+      formData.append("file", webpBlob, "cover.webp");
+
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Upload failed");
+      }
+      const { url } = await res.json();
       setPreview(url);
       onUploaded(url);
     } catch (err) {
