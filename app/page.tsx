@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getFeaturedPost, getPublishedPosts } from "@/lib/posts";
 import MobileNav from "@/components/blog/MobileNav";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const NAV_ITEMS = ["AI", "Dev", "Security", "Cloud", "Hardware"];
 

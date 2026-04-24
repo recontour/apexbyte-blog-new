@@ -3,24 +3,18 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
 function createAdminApp(): App {
-  if (getApps().length > 0) {
-    return getApps()[0];
+  if (getApps().length > 0) return getApps()[0];
+
+  // Use explicit service account secret for local development
+  if (process.env.NODE_ENV === "development") {
+    return initializeApp({
+      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY!)),
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    });
   }
 
-  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-  if (!serviceAccountJson) {
-    throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set.");
-  }
-
-  let serviceAccount: object;
-  try {
-    serviceAccount = JSON.parse(serviceAccountJson);
-  } catch {
-    throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON.");
-  }
-
+  // Firebase App Hosting automatically injects Admin credentials via ADC
   return initializeApp({
-    credential: cert(serviceAccount as Parameters<typeof cert>[0]),
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   });
 }
