@@ -4,6 +4,11 @@ import { useState } from "react";
 
 const NAV_ITEMS = ["AI", "Dev", "Security", "Cloud", "Hardware"];
 
+const EXTERNAL_NAV = [
+  { label: "Our Site", href: "https://www.apexbyte.co/" },
+  { label: "Contact", href: "https://www.apexbyte.co/contact" },
+];
+
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
 
@@ -40,6 +45,19 @@ export default function MobileNav() {
                 className="text-[15px] font-medium text-ink-secondary hover:text-ink transition-colors"
               >
                 {item}
+              </a>
+            ))}
+            <span className="block w-full h-px bg-border" />
+            {EXTERNAL_NAV.map(({ label, href }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="text-[15px] font-medium text-ink-secondary hover:text-ink transition-colors"
+              >
+                {label}
               </a>
             ))}
             <a

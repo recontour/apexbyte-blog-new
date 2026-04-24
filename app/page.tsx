@@ -7,6 +7,11 @@ export const dynamic = "force-dynamic";
 
 const NAV_ITEMS = ["AI", "Dev", "Security", "Cloud", "Hardware"];
 
+const EXTERNAL_NAV = [
+  { label: "Our Site", href: "https://www.apexbyte.co/" },
+  { label: "Contact", href: "https://www.apexbyte.co/contact" },
+];
+
 const TOPICS = [
   "AI & Machine Learning",
   "Web Development",
@@ -60,6 +65,18 @@ export default async function Home() {
             {NAV_ITEMS.map((item) => (
               <a key={item} href="#" className="hover:text-ink transition-colors">
                 {item}
+              </a>
+            ))}
+            <span className="w-px h-4 bg-border" />
+            {EXTERNAL_NAV.map(({ label, href }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-ink transition-colors"
+              >
+                {label}
               </a>
             ))}
           </nav>
@@ -282,11 +299,19 @@ export default async function Home() {
             Apex<span className="text-accent">Byte</span>
           </span>
           <nav className="flex flex-wrap justify-center gap-5 text-[12px] text-muted">
-            {["About", "Archive", "Newsletter", "Twitter", "RSS"].map((l) => (
+            {["Archive", "Newsletter", "Twitter", "RSS"].map((l) => (
               <a key={l} href="#" className="hover:text-ink transition-colors">
                 {l}
               </a>
             ))}
+            <a
+              href="https://www.apexbyte.co/#about"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-ink transition-colors"
+            >
+              About Us
+            </a>
           </nav>
           <p className="text-[12px] text-muted">© 2026 ApexByte</p>
         </div>
