@@ -207,3 +207,40 @@ export async function deletePost(slug: string): Promise<void> {
   await getAdminDb().collection("posts").doc(slug).delete();
 }
 
+// ── Authors ──────────────────────────────────────────────────────────────────
+
+export type AuthorSummary = {
+  name: string;
+  avatarUrl: string | null;
+  postCount: number;
+};
+
+/**
+ * Scan all posts and return a deduplicated list of authors with their current
+ * avatar URL and how many posts they have. Used by the /admin/avatar page.
+ */
+export async function getAuthors(): Promise<AuthorSummary[]> {
+  const snap = await getAdminDb()
+    .collection("posts")
+    .select("author")
+    .get();
+
+  const map = new Map<string, AuthorSummary>();
+  snap.docs.forEach((doc) => {
+    const data = doc.data();
+    const name: string = data.author?.name ?? "ApexByte";
+    const avatarUrl: string | null = data.author?.avatarUrl ?? null;
+    const existing = map.get(name);
+    if (existing) {
+      existing.postCount += 1;
+      // Prefer a non-null avatar if we find one
+      if (!existing.avatarUrl && avatarUrl) existing.avatarUrl = avatarUrl;
+    } else {
+      map.set(name, { name, avatarUrl, postCount: 1 });
+    }
+  });
+
+  return Array.from(map.values()).sort((a, b) => b.postCount - a.postCount);
+}
+
+

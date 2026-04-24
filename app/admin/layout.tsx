@@ -25,6 +25,21 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    href: "/admin/avatar",
+    label: "Avatars",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="8" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.5" />
+        <path
+          d="M2 13.5c0-2.485 2.686-4.5 6-4.5s6 2.015 6 4.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
