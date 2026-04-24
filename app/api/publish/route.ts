@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { savePost } from "@/lib/posts";
+import { savePost, getAuthors } from "@/lib/posts";
 import type { Post } from "@/lib/posts";
 
 export async function POST(request: NextRequest) {
@@ -41,8 +41,19 @@ export async function POST(request: NextRequest) {
 
   try {
     const { slug: _slug, publishedAt, updatedAt: _updatedAt, ...rest } = data as Partial<Post>;
+
+    // If avatarUrl is missing, look it up from existing posts so it's always populated
+    const postData = rest as Omit<Post, "slug" | "publishedAt" | "updatedAt">;
+    if (!postData.author?.avatarUrl && postData.author?.name) {
+      const authors = await getAuthors();
+      const match = authors.find((a) => a.name === postData.author.name);
+      if (match?.avatarUrl) {
+        postData.author = { ...postData.author, avatarUrl: match.avatarUrl };
+      }
+    }
+
     await savePost(slug, {
-      ...(rest as Omit<Post, "slug" | "publishedAt" | "updatedAt">),
+      ...postData,
       ...(publishedAt ? { publishedAt } : {}),
     });
     return NextResponse.json({ success: true, slug });
