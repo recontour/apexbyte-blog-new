@@ -14,7 +14,7 @@ const playfair = Playfair_Display({
   weight: ["400", "600", "700"],
 });
 
-const siteUrl = "https://apexbyte-blog.web.app";
+const siteUrl = "https://apexbyte.blog";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
