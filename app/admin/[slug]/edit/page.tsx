@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import BlockRenderer from "@/components/blog/BlockRenderer";
 import BlockEditor from "@/components/admin/BlockEditor";
 import ImageUploader from "@/components/admin/ImageUploader";
+import AuthorPicker from "@/components/admin/AuthorPicker";
 import type { ContentBlock, Post } from "@/lib/posts";
 
 const CATEGORIES = [
@@ -237,7 +238,11 @@ export default function EditPostPage() {
                 <input value={tags} onChange={(e) => setTags(e.target.value)} className={inputClass} />
               </Field>
               <Field label="Author">
-                <input value={authorName} onChange={(e) => setAuthorName(e.target.value)} className={inputClass} />
+                <AuthorPicker
+                  name={authorName}
+                  avatarUrl={authorAvatarUrl}
+                  onChange={(n, a) => { setAuthorName(n); setAuthorAvatarUrl(a); }}
+                />
               </Field>
               <Field label="Read time">
                 <input value={readTime} onChange={(e) => setReadTime(e.target.value)} className={inputClass} />
@@ -305,9 +310,14 @@ export default function EditPostPage() {
               {excerpt}
             </p>
             <div className="flex items-center gap-3 mb-8 pb-8 border-b border-border">
-              <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center text-[12px] font-semibold text-muted">
-                {authorName[0] ?? "A"}
-              </div>
+              {authorAvatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={authorAvatarUrl} alt={authorName} className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center text-[12px] font-semibold text-muted">
+                  {authorName[0] ?? "A"}
+                </div>
+              )}
               <div>
                 <p className="text-[13px] font-medium text-ink">{authorName}</p>
                 <p className="text-[12px] text-muted">{readTime}</p>

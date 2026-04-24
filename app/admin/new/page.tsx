@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import BlockRenderer from "@/components/blog/BlockRenderer";
 import ImageUploader from "@/components/admin/ImageUploader";
+import AuthorPicker from "@/components/admin/AuthorPicker";
 import type { GeneratedPost } from "@/lib/gemini";
 import type { ContentBlock } from "@/lib/posts";
 
@@ -56,6 +57,7 @@ export default function NewPostPage() {
   const [category, setCategory] = useState("");
   const [tags, setTags] = useState("");
   const [authorName, setAuthorName] = useState("");
+  const [authorAvatarUrl, setAuthorAvatarUrl] = useState("");
   const [readTime, setReadTime] = useState("");
   const [featured, setFeatured] = useState(false);
   const [status, setStatus] = useState<"draft" | "published">("published");
@@ -132,7 +134,7 @@ export default function NewPostPage() {
       excerpt,
       category,
       tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-      author: { name: authorName, avatarUrl: "" },
+      author: { name: authorName, avatarUrl: authorAvatarUrl },
       coverImage: coverImage || null,
       readTime,
       featured,
@@ -302,7 +304,11 @@ export default function NewPostPage() {
                 <input value={tags} onChange={(e) => setTags(e.target.value)} className={inputClass} />
               </Field>
               <Field label="Author">
-                <input value={authorName} onChange={(e) => setAuthorName(e.target.value)} className={inputClass} />
+                <AuthorPicker
+                  name={authorName}
+                  avatarUrl={authorAvatarUrl}
+                  onChange={(n, a) => { setAuthorName(n); setAuthorAvatarUrl(a); }}
+                />
               </Field>
               <Field label="Read time">
                 <input value={readTime} onChange={(e) => setReadTime(e.target.value)} className={inputClass} />
@@ -354,9 +360,14 @@ export default function NewPostPage() {
               {excerpt}
             </p>
             <div className="flex items-center gap-3 mb-8 pb-8 border-b border-border">
-              <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center text-[12px] font-semibold text-muted">
-                {authorName[0] ?? "A"}
-              </div>
+              {authorAvatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={authorAvatarUrl} alt={authorName} className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center text-[12px] font-semibold text-muted">
+                  {authorName[0] ?? "A"}
+                </div>
+              )}
               <div>
                 <p className="text-[13px] font-medium text-ink">{authorName}</p>
                 <p className="text-[12px] text-muted">
