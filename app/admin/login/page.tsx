@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,47 +23,51 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // If already has a valid session cookie, redirect immediately
+  // Handle the redirect result when Google redirects back to this page
   useEffect(() => {
     const from = searchParams.get("from") ?? "/admin";
-    // Attempt a lightweight check by hitting a protected route
-    fetch("/api/generate", { method: "GET" })
-      .then((res) => {
-        if (res.status !== 401 && res.status !== 405) {
+    const auth = getFirebaseAuth();
+
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result) {
+          // User just came back from Google — exchange token for session cookie
+          setLoading(true);
+          const idToken = await result.user.getIdToken();
+          const res = await fetch("/api/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken }),
+          });
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error ?? "Sign-in failed");
+          }
           router.replace(from);
+        } else {
+          // No redirect result — check if already has a valid session
+          fetch("/api/generate", { method: "GET" })
+            .then((res) => {
+              if (res.status !== 401 && res.status !== 405) {
+                router.replace(from);
+              }
+            })
+            .catch(() => {/* not signed in, stay on page */});
         }
       })
-      .catch(() => {/* not signed in, stay on page */});
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Sign-in failed. Please try again.");
+        setLoading(false);
+      });
   }, []);
 
-  async function handleGoogleSignIn() {
+  function handleGoogleSignIn() {
     setLoading(true);
     setError(null);
-    try {
-      const auth = getFirebaseAuth();
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken();
-
-      const res = await fetch("/api/auth/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error ?? "Sign-in failed");
-      }
-
-      const from = searchParams.get("from") ?? "/admin";
-      router.replace(from);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign-in failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    const auth = getFirebaseAuth();
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    signInWithRedirect(auth, provider);
   }
 
   return (
