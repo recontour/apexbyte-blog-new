@@ -166,6 +166,53 @@ export async function getAllPublishedSlugs(): Promise<string[]> {
   return snap.docs.map((doc) => doc.id);
 }
 
+/** Fetch all unique tags from published posts. */
+export async function getTags(): Promise<string[]> {
+  const snap = await getAdminDb()
+    .collection("posts")
+    .where("status", "==", "published")
+    .select("tags")
+    .get();
+
+  const tags = snap.docs.flatMap((doc) => (doc.data().tags as string[]) ?? []);
+
+  return [...new Set(tags)].sort();
+}
+
+/** Fetch all unique categories from published posts. */
+export async function getCategories(): Promise<string[]> {
+  const snap = await getAdminDb()
+    .collection("posts")
+    .where("status", "==", "published")
+    .select("category")
+    .get();
+
+  const categories = snap.docs
+    .map((doc) => doc.data().category as string)
+    .filter(Boolean);
+
+  return [...new Set(categories)].sort();
+}
+
+/** Fetch all published posts in a given category, ordered by publishedAt desc. */
+export async function getPostsByCategory(category: string): Promise<PostSummary[]> {
+  // Avoid a composite index requirement by filtering on category only and sorting in JS.
+  const snap = await getAdminDb()
+    .collection("posts")
+    .where("status", "==", "published")
+    .where("category", "==", category)
+    .get();
+
+  const summaries = snap.docs.map((doc) => {
+    const { blocks: _blocks, ...summary } = docToPost(doc.id, doc.data());
+    return summary;
+  });
+
+  return summaries.sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
+}
+
 /** Fetch all posts (any status) for the admin dashboard. */
 export async function getAllPostsForAdmin(): Promise<PostSummary[]> {
   const snap = await getAdminDb()

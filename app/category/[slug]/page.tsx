@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getFeaturedPost, getPublishedPosts, getTags, getCategories } from "@/lib/posts";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getPostsByCategory, getCategories } from "@/lib/posts";
 import MobileNav from "@/components/blog/MobileNav";
 import NewsletterForm from "@/components/blog/NewsletterForm";
 
@@ -19,28 +21,43 @@ function formatDate(iso: string) {
   });
 }
 
-export default async function Home() {
-  // Firebase credentials are only available at runtime on Firebase App Hosting.
-  // Fall back to empty data at build time; ISR will populate on first request.
-  let featured: Awaited<ReturnType<typeof getFeaturedPost>> = null;
-  let posts: Awaited<ReturnType<typeof getPublishedPosts>> = [];
-  let topics: string[] = [];
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const category = decodeURIComponent(slug);
+  return {
+    title: `${category} — ApexByte`,
+    description: `Articles about ${category} on ApexByte.`,
+  };
+}
+
+export default async function CategoryPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const category = decodeURIComponent(slug);
+
+  let posts: Awaited<ReturnType<typeof getPostsByCategory>> = [];
   let navCategories: string[] = [];
   try {
-    [featured, posts, topics, navCategories] = await Promise.all([
-      getFeaturedPost(),
-      getPublishedPosts(12),
-      getTags(),
+    [posts, navCategories] = await Promise.all([
+      getPostsByCategory(category),
       getCategories(),
     ]);
-  } catch {
+  } catch (err) {
     // credentials unavailable at build time — ISR will handle real data
+    console.error("[category page] Firestore error:", err);
   }
 
-  // Filter out the featured post from the list to avoid duplication
-  const listPosts = featured
-    ? posts.filter((p) => p.slug !== featured.slug)
-    : posts;
+  // If the category doesn't exist at all, 404
+  if (navCategories.length > 0 && !navCategories.includes(category)) {
+    notFound();
+  }
 
   return (
     <div className="min-h-screen bg-surface">
@@ -58,7 +75,7 @@ export default async function Home() {
               <Link
                 key={item}
                 href={`/category/${encodeURIComponent(item)}`}
-                className="hover:text-ink transition-colors"
+                className={`hover:text-ink transition-colors ${item === category ? "text-ink font-semibold" : ""}`}
               >
                 {item}
               </Link>
@@ -84,128 +101,36 @@ export default async function Home() {
             Subscribe
           </a>
 
-          <MobileNav categories={navCategories} />
+          <MobileNav categories={navCategories} activeCategory={category} />
         </div>
       </header>
 
       {/* Main */}
       <main className="mx-auto max-w-5xl px-5 sm:px-8 pb-24">
-
-        {/* Hero / Featured */}
-        {featured && (
-          <section className="mt-12 sm:mt-16">
-            <div className="rounded-2xl bg-white border border-border overflow-hidden shadow-sm">
-              {featured.coverImage ? (
-                <div className="w-full h-52 sm:h-72 relative">
-                  <Image
-                    src={featured.coverImage}
-                    alt={featured.title}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-black/30 flex items-end p-6 sm:p-10">
-                    <span className="inline-block rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-semibold tracking-widest uppercase px-3 py-1">
-                      Featured
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full h-52 sm:h-72 bg-linear-to-br from-accent via-[#1a56db] to-[#6d28d9] flex items-end p-6 sm:p-10">
-                  <span className="inline-block rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-semibold tracking-widest uppercase px-3 py-1">
-                    Featured
-                  </span>
-                </div>
-              )}
-
-              <div className="p-6 sm:p-10">
-                <p className="text-[11px] font-semibold tracking-widest uppercase text-accent mb-3">
-                  {featured.category}
-                </p>
-                <h1
-                  className="font-serif text-2xl sm:text-4xl font-semibold leading-snug text-ink mb-4 max-w-2xl"
-                  style={{ fontFamily: "var(--font-playfair)" }}
-                >
-                  {featured.title}
-                </h1>
-                <p className="text-[15px] leading-relaxed text-ink-secondary max-w-xl mb-6">
-                  {featured.excerpt}
-                </p>
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-3">
-                    {featured.author.avatarUrl ? (
-                      <Image
-                        src={featured.author.avatarUrl}
-                        alt={featured.author.name}
-                        width={32}
-                        height={32}
-                        className="rounded-full"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center text-[12px] font-semibold text-ink-secondary">
-                        {featured.author.name[0]}
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-[13px] font-medium text-ink">
-                        {featured.author.name}
-                      </p>
-                      <p className="text-[12px] text-muted">
-                        {formatDate(featured.publishedAt)} · {featured.readTime}
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/blog/${featured.slug}`}
-                    className="text-[13px] font-medium text-accent hover:text-accent-hover transition-colors"
-                  >
-                    Read article
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {!featured && posts.length === 0 && (
-          <section className="mt-16 text-center py-24">
-            <p className="text-[15px] text-muted">No posts yet. Check back soon.</p>
-          </section>
-        )}
-
-        {/* Topics */}
-        <section className="mt-12">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <span className="shrink-0 text-[12px] font-semibold text-muted uppercase tracking-wider mr-1">
-              Topics
-            </span>
-            {topics.map((t) => (
-              <a
-                key={t}
-                href="#"
-                className="shrink-0 rounded-full border border-border bg-white px-3 py-1 text-[12px] font-medium text-ink-secondary hover:border-accent hover:text-accent transition-colors whitespace-nowrap"
-              >
-                {t}
-              </a>
-            ))}
-          </div>
+        {/* Heading */}
+        <section className="mt-12 sm:mt-16">
+          <p className="text-[11px] font-semibold tracking-widest uppercase text-accent mb-2">
+            Category
+          </p>
+          <h1
+            className="text-3xl sm:text-4xl font-semibold text-ink"
+            style={{ fontFamily: "var(--font-playfair)" }}
+          >
+            {category}
+          </h1>
+          <p className="mt-2 text-[14px] text-muted">
+            {posts.length} {posts.length === 1 ? "article" : "articles"}
+          </p>
         </section>
 
-        {/* Latest Posts */}
-        {listPosts.length > 0 && (
-          <section className="mt-12">
-            <h2 className="text-[13px] font-semibold tracking-widest uppercase text-muted mb-6">
-              Latest
-            </h2>
-
+        {/* Posts */}
+        {posts.length > 0 ? (
+          <section className="mt-10">
             <div className="divide-y divide-border">
-              {listPosts.map((post) => (
+              {posts.map((post, index) => (
                 <article key={post.slug} className="py-7 group">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold tracking-widest uppercase text-accent mb-2">
-                        {post.category}
-                      </p>
                       <h3
                         className="text-[18px] sm:text-[20px] font-semibold leading-snug text-ink mb-2 group-hover:text-accent transition-colors"
                         style={{ fontFamily: "var(--font-playfair)" }}
@@ -227,6 +152,8 @@ export default async function Home() {
                           alt={post.title}
                           fill
                           className="object-cover"
+                          loading={index === 0 ? "eager" : "lazy"}
+                          priority={index === 0}
                         />
                       </Link>
                     ) : (
@@ -255,6 +182,10 @@ export default async function Home() {
                 </article>
               ))}
             </div>
+          </section>
+        ) : (
+          <section className="mt-16 text-center py-24">
+            <p className="text-[15px] text-muted">No posts in this category yet.</p>
           </section>
         )}
 

@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 
-const NAV_ITEMS = ["AI", "Dev", "Security", "Cloud", "Hardware"];
-
 const EXTERNAL_NAV = [
   { label: "Our Site", href: "https://www.apexbyte.co/" },
   { label: "Contact", href: "https://www.apexbyte.co/contact" },
 ];
 
-export default function MobileNav() {
+export default function MobileNav({ categories = [], activeCategory }: { categories?: string[]; activeCategory?: string }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -37,12 +35,14 @@ export default function MobileNav() {
       >
         <div className="overflow-hidden">
           <div className="border-b border-border bg-white px-5 py-4 flex flex-col gap-4 shadow-md">
-            {NAV_ITEMS.map((item) => (
+            {categories.map((item) => (
               <a
                 key={item}
-                href="#"
+                href={`/category/${encodeURIComponent(item)}`}
                 onClick={() => setOpen(false)}
-                className="text-[15px] font-medium text-ink-secondary hover:text-ink transition-colors"
+                className={`text-[15px] font-medium transition-colors ${
+                  item === activeCategory ? "text-accent" : "text-ink-secondary hover:text-ink"
+                }`}
               >
                 {item}
               </a>
