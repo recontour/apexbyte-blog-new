@@ -179,6 +179,25 @@ export async function getTags(): Promise<string[]> {
   return [...new Set(tags)].sort();
 }
 
+/** Fetch all published posts that include a given tag, ordered by publishedAt desc. */
+export async function getPostsByTag(tag: string): Promise<PostSummary[]> {
+  // array-contains doesn't require a composite index alongside status filter
+  const snap = await getAdminDb()
+    .collection("posts")
+    .where("status", "==", "published")
+    .where("tags", "array-contains", tag)
+    .get();
+
+  const summaries = snap.docs.map((doc) => {
+    const { blocks: _blocks, ...summary } = docToPost(doc.id, doc.data());
+    return summary;
+  });
+
+  return summaries.sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
+}
+
 /** Fetch all unique categories from published posts. */
 export async function getCategories(): Promise<string[]> {
   const snap = await getAdminDb()

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getFeaturedPost, getPublishedPosts, getTags, getCategories } from "@/lib/posts";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getPostsByTag, getTags, getCategories } from "@/lib/posts";
 import MobileNav from "@/components/blog/MobileNav";
 import NewsletterForm from "@/components/blog/NewsletterForm";
 
@@ -33,28 +35,44 @@ function formatTag(tag: string) {
     .join(" ");
 }
 
-export default async function Home() {
-  // Firebase credentials are only available at runtime on Firebase App Hosting.
-  // Fall back to empty data at build time; ISR will populate on first request.
-  let featured: Awaited<ReturnType<typeof getFeaturedPost>> = null;
-  let posts: Awaited<ReturnType<typeof getPublishedPosts>> = [];
-  let topics: string[] = [];
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const tag = decodeURIComponent(slug);
+  return {
+    title: `${tag} — ApexByte`,
+    description: `Articles tagged "${tag}" on ApexByte.`,
+  };
+}
+
+export default async function TagPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const tag = decodeURIComponent(slug);
+
+  let posts: Awaited<ReturnType<typeof getPostsByTag>> = [];
+  let allTags: string[] = [];
   let navCategories: string[] = [];
   try {
-    [featured, posts, topics, navCategories] = await Promise.all([
-      getFeaturedPost(),
-      getPublishedPosts(12),
+    [posts, allTags, navCategories] = await Promise.all([
+      getPostsByTag(tag),
       getTags(),
       getCategories(),
     ]);
-  } catch {
-    // credentials unavailable at build time — ISR will handle real data
+  } catch (err) {
+    console.error("[tag page] Firestore error:", err);
   }
 
-  // Filter out the featured post from the list to avoid duplication
-  const listPosts = featured
-    ? posts.filter((p) => p.slug !== featured.slug)
-    : posts;
+  // 404 if the tag doesn't exist at all
+  if (allTags.length > 0 && !allTags.includes(tag)) {
+    notFound();
+  }
 
   return (
     <div className="min-h-screen bg-surface">
@@ -104,98 +122,27 @@ export default async function Home() {
 
       {/* Main */}
       <main className="mx-auto max-w-5xl px-5 sm:px-8 pb-24">
+        {/* Heading */}
+        <section className="mt-12 sm:mt-16">
+          <p className="text-[11px] font-semibold tracking-widest uppercase text-accent mb-2">
+            Topic
+          </p>
+          <h1
+            className="text-3xl sm:text-4xl font-semibold text-ink"
+            style={{ fontFamily: "var(--font-playfair)" }}
+          >
+            {formatTag(tag)}
+          </h1>
+          <p className="mt-2 text-[14px] text-muted">
+            {posts.length} {posts.length === 1 ? "article" : "articles"}
+          </p>
+        </section>
 
-        {/* Hero / Featured */}
-        {featured && (
-          <section className="mt-12 sm:mt-16">
-            <div className="rounded-2xl bg-white border border-border overflow-hidden shadow-sm">
-              {featured.coverImage ? (
-                <div className="w-full h-52 sm:h-72 relative">
-                  <Image
-                    src={featured.coverImage}
-                    alt={featured.title}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-black/30 flex items-end p-6 sm:p-10">
-                    <span className="inline-block rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-semibold tracking-widest uppercase px-3 py-1">
-                      Featured
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full h-52 sm:h-72 bg-linear-to-br from-accent via-[#1a56db] to-[#6d28d9] flex items-end p-6 sm:p-10">
-                  <span className="inline-block rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-semibold tracking-widest uppercase px-3 py-1">
-                    Featured
-                  </span>
-                </div>
-              )}
-
-              <div className="p-6 sm:p-10">
-                <p className="text-[11px] font-semibold tracking-widest uppercase text-accent mb-3">
-                  {featured.category}
-                </p>
-                <h1
-                  className="font-serif text-2xl sm:text-4xl font-semibold leading-snug text-ink mb-4 max-w-2xl"
-                  style={{ fontFamily: "var(--font-playfair)" }}
-                >
-                  {featured.title}
-                </h1>
-                <p className="text-[15px] leading-relaxed text-ink-secondary max-w-xl mb-6">
-                  {featured.excerpt}
-                </p>
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-3">
-                    {featured.author.avatarUrl ? (
-                      <Image
-                        src={featured.author.avatarUrl}
-                        alt={featured.author.name}
-                        width={32}
-                        height={32}
-                        className="rounded-full"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center text-[12px] font-semibold text-ink-secondary">
-                        {featured.author.name[0]}
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-[13px] font-medium text-ink">
-                        {featured.author.name}
-                      </p>
-                      <p className="text-[12px] text-muted">
-                        {formatDate(featured.publishedAt)} · {featured.readTime}
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/blog/${featured.slug}`}
-                    className="text-[13px] font-medium text-accent hover:text-accent-hover transition-colors"
-                  >
-                    Read article
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {!featured && posts.length === 0 && (
-          <section className="mt-16 text-center py-24">
-            <p className="text-[15px] text-muted">No posts yet. Check back soon.</p>
-          </section>
-        )}
-
-        {/* Latest Posts */}
-        {listPosts.length > 0 && (
-          <section className="mt-12">
-            <h2 className="text-[13px] font-semibold tracking-widest uppercase text-muted mb-6">
-              Latest
-            </h2>
-
+        {/* Posts */}
+        {posts.length > 0 ? (
+          <section className="mt-10">
             <div className="divide-y divide-border">
-              {listPosts.map((post) => (
+              {posts.map((post, index) => (
                 <article key={post.slug} className="py-7 group">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -223,6 +170,8 @@ export default async function Home() {
                           alt={post.title}
                           fill
                           className="object-cover"
+                          loading={index === 0 ? "eager" : "lazy"}
+                          priority={index === 0}
                         />
                       </Link>
                     ) : (
@@ -252,25 +201,11 @@ export default async function Home() {
               ))}
             </div>
           </section>
+        ) : (
+          <section className="mt-16 text-center py-24">
+            <p className="text-[15px] text-muted">No posts with this topic yet.</p>
+          </section>
         )}
-
-        {/* Topics */}
-        <section className="mt-12">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <span className="shrink-0 text-[12px] font-semibold text-muted uppercase tracking-wider mr-1">
-              Topics
-            </span>
-            {topics.map((t) => (
-              <Link
-                key={t}
-                href={`/tag/${encodeURIComponent(t)}`}
-                className="shrink-0 rounded-full border border-border bg-white px-3 py-1 text-[12px] font-medium text-ink-secondary hover:border-accent hover:text-accent transition-colors whitespace-nowrap"
-              >
-                {formatTag(t)}
-              </Link>
-            ))}
-          </div>
-        </section>
 
         {/* Newsletter CTA */}
         <section id="newsletter" className="mt-16 rounded-2xl bg-white border border-border p-8 sm:p-12 text-center shadow-sm">
