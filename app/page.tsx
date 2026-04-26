@@ -105,6 +105,20 @@ export default async function Home() {
       {/* Main */}
       <main className="mx-auto max-w-5xl px-5 sm:px-8 pb-24">
 
+        {/* Hero Introduction */}
+        <section className="py-12 sm:py-16 border-b border-border">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-ink mb-6">
+              Developer Insights on Software Engineering, AI and Web Development
+            </h1>
+            <p className="text-lg sm:text-xl text-ink-secondary leading-relaxed">
+              ApexByte publishes deep dives into{" "}
+              <span className="text-accent font-medium">cloud architecture, artificial intelligence,</span>{" "}
+              and modern web development. Written for engineers who want to stay ahead.
+            </p>
+          </div>
+        </section>
+
         {/* Hero / Featured */}
         {featured && (
           <section className="mt-12 sm:mt-16">
@@ -136,12 +150,12 @@ export default async function Home() {
                 <p className="text-[11px] font-semibold tracking-widest uppercase text-accent mb-3">
                   {featured.category}
                 </p>
-                <h1
+                <h2
                   className="font-serif text-2xl sm:text-4xl font-semibold leading-snug text-ink mb-4 max-w-2xl"
                   style={{ fontFamily: "var(--font-playfair)" }}
                 >
                   {featured.title}
-                </h1>
+                </h2>
                 <p className="text-[15px] leading-relaxed text-ink-secondary max-w-xl mb-6">
                   {featured.excerpt}
                 </p>
